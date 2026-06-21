@@ -7,7 +7,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#e8edf2;font-family:'Hanuman','Khmer OS',sans-serif;min-height:100vh;padding:0 0 40px}
+body{background:#e8edf2;font-family:'Khmer OS','Khmer Sangam MN',-apple-system,'Hanuman',sans-serif;min-height:100vh;padding:0 0 40px}
 
 /* ===== TOP NAV TABS ===== */
 .top-bar{background:#1565c0;padding:14px 16px 0;max-width:700px;margin:0 auto}
@@ -859,7 +859,7 @@ function renderHistory(){
       return '<button class="chip-btn" data-key="'+g.custId+'"'
         +' onclick="chipFilter(this)"'
         +' style="padding:4px 12px;border-radius:20px;border:1.5px solid '+(active?'#6a1b9a':'#ccc')+';background:'+(active?'#f3e5f5':'#f5f5f5')+';color:'+(active?'#4a148c':'#888')+';font-size:.75rem;font-family:inherit;cursor:pointer">'
-        +'👤 '+g.label+'<span style="margin-left:5px;background:#6a1b9a;color:#fff;border-radius:10px;padding:0 6px;font-size:.68rem">'+g.records.length+'</span>'
+        +'👤 '+g.label
         +'</button>';
     }).join('');
   }
@@ -1009,10 +1009,9 @@ function printResult(){
   var html = '<!DOCTYPE html><html><head>'
     + '<meta charset="UTF-8">'
     + '<title>វិក្កយបត្រភ្លើង</title>'
-    + '<link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&display=swap" rel="stylesheet">'
     + '<style>'
     + '*{box-sizing:border-box;margin:0;padding:0}'
-    + 'body{font-family:Hanuman,sans-serif;background:#fff;padding:16px;font-size:13px;color:#111}'
+    + 'body{font-family:"Khmer OS","Khmer Sangam MN",-apple-system,sans-serif;background:#fff;padding:16px;font-size:13px;color:#111}'
     + 'h2{text-align:center;color:#1565c0;margin-bottom:4px;font-size:1rem}'
     + '.sub{text-align:center;color:#888;font-size:.75rem;margin-bottom:12px}'
     + '.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}'
