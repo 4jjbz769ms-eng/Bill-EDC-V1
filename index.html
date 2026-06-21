@@ -456,9 +456,6 @@ input[readonly]{background:#f5f5f5;color:#777}
         </div>
         <button class="btn btn-red" style="font-size:.75rem;padding:7px 12px;white-space:nowrap" onclick="clearHistory()">🗑 លុបទាំងអស់</button>
       </div>
-      <!-- Customer quick-filter chips -->
-      <div id="custChips" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
-    </div>
   </div>
 
   <!-- Grouped history list -->
@@ -832,13 +829,11 @@ function selectAndGoCalc(id){
 // ===== HISTORY =====
 function renderHistory(){
   const container = document.getElementById('historyGrouped');
-  const chipsEl   = document.getElementById('custChips');
   const filterQ   = (document.getElementById('histFilterCust').value||'').toLowerCase();
   if(!container) return;
 
   if(!history.length){
     container.innerHTML='<div class="card"><div class="card-body"><div class="empty">មិនទាន់មានទិន្នន័យ</div></div></div>';
-    if(chipsEl) chipsEl.innerHTML='';
     return;
   }
 
@@ -851,18 +846,6 @@ function renderHistory(){
     groupMap[key].records.push(r);
   });
   const groups = Object.values(groupMap);
-
-  // Render quick-filter chips
-  if(chipsEl){
-    chipsEl.innerHTML = groups.map(g=>{
-      const active = filterQ==='' || g.label.toLowerCase().includes(filterQ) || g.custId.toLowerCase().includes(filterQ);
-      return '<button class="chip-btn" data-key="'+g.custId+'"'
-        +' onclick="chipFilter(this)"'
-        +' style="padding:4px 12px;border-radius:20px;border:1.5px solid '+(active?'#6a1b9a':'#ccc')+';background:'+(active?'#f3e5f5':'#f5f5f5')+';color:'+(active?'#4a148c':'#888')+';font-size:.75rem;font-family:inherit;cursor:pointer">'
-        +'👤 '+g.label
-        +'</button>';
-    }).join('');
-  }
 
   // Filter groups
   const filtered = filterQ
@@ -945,19 +928,6 @@ function toggleGroup(id){
     el.style.display='none';
     if(arr) arr.textContent='▶';
   }
-}
-
-function chipFilter(btn){
-  const cid = btn.getAttribute('data-key');
-  const inp = document.getElementById('histFilterCust');
-  // find customer name for display
-  const cust = customers.find(c=>c.id===cid);
-  if(inp.value && (inp.value===cid||(cust&&inp.value===cust.name))){
-    inp.value=''; // toggle off
-  } else {
-    inp.value = cid;
-  }
-  renderHistory();
 }
 
 function clearHistory(){
