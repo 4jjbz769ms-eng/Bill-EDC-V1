@@ -700,7 +700,7 @@ function calculate(){
   // Save history
   history.unshift({
     id:Date.now(), meterId, multiplier, oldRead, newRead, usage,
-    rateKhr, totalKhr, totalUsd: (totalKhr/exRate).toFixed(2),
+    rateKhr, exRate, totalKhr, totalUsd: (totalKhr/exRate).toFixed(2),
     debt1: newDebt, newDebt, prevDebt, payTotal, grandTotal,
     month:month||'—', timestamp:now(),
     custId:selectedCust?selectedCust.id:'',
@@ -953,6 +953,11 @@ function openEditHistModal(rid){
   document.getElementById('eh_old').value     = r.oldRead;
   document.getElementById('eh_new').value     = r.newRead;
   document.getElementById('eh_rate').value    = r.rateKhr;
+  let derivedExRate = 4100;
+  if(r.totalKhr && r.totalUsd && parseFloat(r.totalUsd)>0){
+    derivedExRate = Math.round(r.totalKhr/parseFloat(r.totalUsd));
+  }
+  document.getElementById('eh_exrate').value  = r.exRate||derivedExRate;
   document.getElementById('editHistModal').style.display='flex';
 }
 function closeEditHistModal(){
@@ -965,6 +970,7 @@ function saveEditHist(){
   const oldRead = parseFloat(document.getElementById('eh_old').value);
   const newRead = parseFloat(document.getElementById('eh_new').value);
   const rateKhr = parseFloat(document.getElementById('eh_rate').value)||r.rateKhr;
+  const exRate  = parseFloat(document.getElementById('eh_exrate').value)||4100;
   const month   = document.getElementById('eh_month').value.trim()||'—';
   const meterId = document.getElementById('eh_meter').value.trim()||'—';
 
@@ -981,8 +987,8 @@ function saveEditHist(){
   const newDebt  = grandTotal-payTotal;
 
   r.month=month; r.meterId=meterId; r.oldRead=oldRead; r.newRead=newRead;
-  r.rateKhr=rateKhr; r.usage=usage; r.totalKhr=totalKhr;
-  r.totalUsd=(totalKhr/4100).toFixed(2);
+  r.rateKhr=rateKhr; r.exRate=exRate; r.usage=usage; r.totalKhr=totalKhr;
+  r.totalUsd=(totalKhr/exRate).toFixed(2);
   r.grandTotal=grandTotal; r.payTotal=payTotal; r.newDebt=newDebt; r.debt1=newDebt;
 
   save();
@@ -1257,8 +1263,9 @@ renderDataSummary();
         <div><label>អំណានចាស់ (kWh)</label><input type="number" id="eh_old" min="0"></div>
         <div><label>អំណានថ្មី (kWh)</label><input type="number" id="eh_new" min="0"></div>
       </div>
-      <div class="form-row col1">
+      <div class="form-row col2">
         <div><label>ថ្លៃរង្គិត / kWh (៛)</label><input type="number" id="eh_rate" min="0"></div>
+        <div><label>អត្រាប្ដូរ KHR/$</label><input type="number" id="eh_exrate" min="1"></div>
       </div>
     </div>
     <div class="modal-actions">
