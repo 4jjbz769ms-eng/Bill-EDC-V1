@@ -456,6 +456,7 @@ input[readonly]{background:#f5f5f5;color:#777}
         </div>
         <button class="btn btn-red" style="font-size:.75rem;padding:7px 12px;white-space:nowrap" onclick="clearHistory()">🗑 លុបទាំងអស់</button>
       </div>
+    </div>
   </div>
 
   <!-- Grouped history list -->
@@ -869,6 +870,8 @@ function renderHistory(){
       +'<span class="hp" style="color:'+color+'">📅 ខែ '+r.month+' | '+r.meterId+'</span>'
       +'<div style="display:flex;align-items:center;gap:6px">'
       +'<span class="hd">'+r.timestamp+'</span>'
+      +'<button class="btn-edit-hist" data-rid="'+String(r.id)+'"'
+      +' style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;border-radius:3px;padding:2px 8px;font-size:.7rem;cursor:pointer">✏️ កែ</button>'
       +'<button class="btn-del-hist" data-rid="'+String(r.id)+'"'
       +' style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:3px;padding:2px 8px;font-size:.7rem;cursor:pointer">🗑 លុប</button>'
       +'</div></div>'
@@ -902,6 +905,15 @@ function renderHistory(){
       +'</div>';
   }).join('');
 
+  // Bind edit buttons
+  container.querySelectorAll('.btn-edit-hist').forEach(btn=>{
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      const rid=this.getAttribute('data-rid');
+      openEditHistModal(rid);
+    });
+  });
+
   // Bind delete buttons
   container.querySelectorAll('.btn-del-hist').forEach(btn=>{
     btn.addEventListener('click',function(e){
@@ -928,6 +940,54 @@ function toggleGroup(id){
     el.style.display='none';
     if(arr) arr.textContent='▶';
   }
+}
+
+// ===== EDIT HISTORY RECORD =====
+let _editHistId = null;
+function openEditHistModal(rid){
+  const r = history.find(x=>String(x.id)===String(rid));
+  if(!r) return;
+  _editHistId = rid;
+  document.getElementById('eh_month').value   = r.month==='—'?'':r.month;
+  document.getElementById('eh_meter').value   = r.meterId==='—'?'':r.meterId;
+  document.getElementById('eh_old').value     = r.oldRead;
+  document.getElementById('eh_new').value     = r.newRead;
+  document.getElementById('eh_rate').value    = r.rateKhr;
+  document.getElementById('editHistModal').style.display='flex';
+}
+function closeEditHistModal(){
+  document.getElementById('editHistModal').style.display='none';
+  _editHistId = null;
+}
+function saveEditHist(){
+  const r = history.find(x=>String(x.id)===String(_editHistId));
+  if(!r) return;
+  const oldRead = parseFloat(document.getElementById('eh_old').value);
+  const newRead = parseFloat(document.getElementById('eh_new').value);
+  const rateKhr = parseFloat(document.getElementById('eh_rate').value)||r.rateKhr;
+  const month   = document.getElementById('eh_month').value.trim()||'—';
+  const meterId = document.getElementById('eh_meter').value.trim()||'—';
+
+  if(isNaN(oldRead)||isNaN(newRead)){alert('សូមបញ្ចូលអំណានចាស់ និងថ្មី!');return}
+  if(newRead<oldRead){alert('អំណានថ្មីត្រូវតែធំជាងអំណានចាស់!');return}
+
+  const multiplier = r.multiplier||1;
+  const usage    = (newRead-oldRead)*multiplier;
+  const totalKhr = usage*rateKhr;
+  const prevDebt = r.prevDebt||0;
+  const grandTotal = totalKhr+prevDebt;
+  const roundTo  = 100;
+  const payTotal = Math.floor(grandTotal/roundTo)*roundTo;
+  const newDebt  = grandTotal-payTotal;
+
+  r.month=month; r.meterId=meterId; r.oldRead=oldRead; r.newRead=newRead;
+  r.rateKhr=rateKhr; r.usage=usage; r.totalKhr=totalKhr;
+  r.totalUsd=(totalKhr/4100).toFixed(2);
+  r.grandTotal=grandTotal; r.payTotal=payTotal; r.newDebt=newDebt; r.debt1=newDebt;
+
+  save();
+  closeEditHistModal();
+  renderHistory();
 }
 
 function clearHistory(){
@@ -959,6 +1019,9 @@ function modalCancel(){
 // close on overlay click
 document.getElementById('confirmModal').addEventListener('click',function(e){
   if(e.target===this) modalCancel();
+});
+document.getElementById('editHistModal').addEventListener('click',function(e){
+  if(e.target===this) closeEditHistModal();
 });
 
 // ===== PRINT & SAVE IMAGE =====
@@ -1177,6 +1240,30 @@ renderDataSummary();
     <div class="modal-actions">
       <button class="btn btn-gray" onclick="modalCancel()">បោះបង់</button>
       <button class="btn btn-red" onclick="modalConfirm()">✓ លុប</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit History Modal -->
+<div class="modal-overlay" id="editHistModal" style="display:none">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-title" style="background:#1565c0">✏️ កែប្រវត្តិការប្រើប្រាស់</div>
+    <div class="modal-body">
+      <div class="form-row col2">
+        <div><label>ខែ</label><input type="text" id="eh_month" placeholder="06/2026"></div>
+        <div><label>ប្រអប់ម៉ែត្រ</label><input type="text" id="eh_meter" placeholder="IEC..."></div>
+      </div>
+      <div class="form-row col2">
+        <div><label>អំណានចាស់ (kWh)</label><input type="number" id="eh_old" min="0"></div>
+        <div><label>អំណានថ្មី (kWh)</label><input type="number" id="eh_new" min="0"></div>
+      </div>
+      <div class="form-row col1">
+        <div><label>ថ្លៃរង្គិត / kWh (៛)</label><input type="number" id="eh_rate" min="0"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeEditHistModal()">បោះបង់</button>
+      <button class="btn btn-primary" onclick="saveEditHist()">✓ រក្សាទុក</button>
     </div>
   </div>
 </div>
