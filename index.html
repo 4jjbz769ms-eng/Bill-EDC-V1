@@ -160,7 +160,7 @@
   .btn-col-del { background:rgba(229,62,62,0.12); color:#c53030; border:1px solid rgba(229,62,62,0.25); }
   .btn-col-add:hover { background:rgba(26,86,160,0.28); }
   .btn-col-del:hover { background:rgba(229,62,62,0.25); }
-  th[data-col] { cursor:pointer; position:relative; }
+  th[data-col] { cursor:pointer; position:relative; user-select:none; }
   th[data-col]:hover::after { content:"✏️"; position:absolute; top:2px; right:3px; font-size:9px; opacity:0.6; }
 
   /* Header edit modal */
@@ -275,86 +275,6 @@
     .btn { font-size: 12px; padding: 9px 6px; }
   }
 
-  /* IMAGE UPLOAD SECTION */
-  .img-section {
-    margin-top: 18px;
-    border: 1.5px dashed #a0bdd8;
-    border-radius: 8px;
-    padding: 14px;
-    background: #f7fafd;
-  }
-  .img-section-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #1a56a0;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .img-upload-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #1a56a0;
-    color: #fff;
-    border-radius: 7px;
-    padding: 9px 16px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: opacity .15s;
-  }
-  .img-upload-label:active { opacity: 0.8; }
-  #imgFileInput { display: none; }
-  .img-count { font-size: 12px; color: #666; margin-left: 10px; }
-  .img-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-top: 12px;
-  }
-  @media (min-width: 480px) { .img-grid { grid-template-columns: repeat(4, 1fr); } }
-  @media (min-width: 640px) { .img-grid { grid-template-columns: repeat(5, 1fr); } }
-  .img-thumb-wrap {
-    position: relative;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 2px solid #b8cfe8;
-    background: #000;
-    aspect-ratio: 1 / 1;
-  }
-  .img-thumb-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-  .img-thumb-del {
-    position: absolute;
-    top: 3px; right: 3px;
-    background: rgba(229,62,62,0.90);
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 22px; height: 22px;
-    font-size: 12px; font-weight: 700;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 2;
-    font-family: inherit;
-  }
-  .img-num {
-    position: absolute;
-    bottom: 3px; left: 4px;
-    background: rgba(0,0,0,0.55);
-    color: #fff;
-    font-size: 10px; font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 3px;
-    z-index: 2;
-  }
 </style>
 </head>
 <body>
@@ -386,10 +306,9 @@
     <table id="mainTable">
       <thead id="theadUSD">
         <tr id="theadUSDRow">
-          <th style="width:30px">#</th>
-          <th data-col="usd-1" ondblclick="editColHeader(this,'usd',1)">COD Rec ($)<br><small>ចំណូលទទួល</small></th>
-          <th data-col="usd-2" ondblclick="editColHeader(this,'usd',2)">Ref.<br><small>លេខឯកសារយោង</small></th>
-          <th data-col="usd-3" ondblclick="editColHeader(this,'usd',3)">Note<br><small>កំណត់សម្គាល់</small></th>
+          <th style="width:30px" data-col="usd-0">#</th>
+          <th data-col="usd-1">COD Rec ($)<br><small>ចំណូលទទួល</small></th>
+          <th data-col="usd-2">Ref.<br><small>លេខឯកសារយោង</small></th>
           <th class="col-ctrl-th" style="width:36px;background:#e8f0fa;padding:2px;">
             <button class="btn-col-del" onclick="removeColUSD()" title="ដក Column">−</button>
             <button class="btn-col-add" onclick="addColUSD()" title="បន្ថែម Column">+</button>
@@ -408,7 +327,6 @@
               style="width:100%;border:1.5px dashed #b8860b;background:#fff8dc;border-radius:4px;font-size:12px;color:#5a1aaa;font-weight:700;padding:3px 5px;text-align:center;outline:none;font-family:inherit;"
               oninput="syncRefInputs()">
           </td>
-          <td style="background:#ffe87a !important;"></td>
         </tr>
       </tbody>
       </table>
@@ -421,10 +339,9 @@
     <table id="khrTable">
       <thead id="theadKHR">
         <tr id="theadKHRRow">
-          <th style="width:30px">#</th>
-          <th data-col="khr-1" ondblclick="editColHeader(this,'khr',1)">COD Rec (៛)<br><small>ចំណូលទទួល</small></th>
-          <th data-col="khr-2" ondblclick="editColHeader(this,'khr',2)">Ref.<br><small>លេខឯកសារយោង</small></th>
-          <th data-col="khr-3" ondblclick="editColHeader(this,'khr',3)">Note<br><small>កំណត់សម្គាល់</small></th>
+          <th style="width:30px" data-col="khr-0">#</th>
+          <th data-col="khr-1">COD Rec (៛)<br><small>ចំណូលទទួល</small></th>
+          <th data-col="khr-2">Ref.<br><small>លេខឯកសារយោង</small></th>
           <th class="col-ctrl-th" style="width:36px;background:#e8f0fa;padding:2px;">
             <button class="btn-col-del" onclick="removeColKHR()" title="ដក Column">−</button>
             <button class="btn-col-add" onclick="addColKHR()" title="បន្ថែម Column">+</button>
@@ -443,7 +360,6 @@
               style="width:100%;border:1.5px dashed #b8860b;background:#fff8dc;border-radius:4px;font-size:12px;color:#5a1aaa;font-weight:700;padding:3px 5px;text-align:center;outline:none;font-family:inherit;"
               oninput="syncRefInputs()">
           </td>
-          <td style="background:#ffe87a !important;"></td>
         </tr>
       </tbody>
     </table>
@@ -473,17 +389,6 @@
         <span class="label">🔖 លេខកូដប្រតិបត្តិការ (៛):</span>
         <span class="val ref" id="s_ref_khr">—</span>
       </div>
-    </div>
-
-    <!-- IMAGE UPLOAD -->
-    <div class="img-section">
-      <div class="img-section-title">🖼️ ភ្ជាប់រូបភាព (អតិបរមា 20 រូប)</div>
-      <label class="img-upload-label">
-        📎 ជ្រើសរូបភាព
-        <input type="file" id="imgFileInput" accept="image/*,image/heic,image/heif" multiple onchange="handleImgUpload(this)">
-      </label>
-      <span class="img-count" id="imgCount">0 / 20</span>
-      <div class="img-grid" id="imgGrid"></div>
     </div>
 
     <!-- BUTTONS -->
@@ -530,7 +435,6 @@ function makeUSDRow(i){
     <td class="num-label">${i}</td>
     <td><input type="text" class="cod-usd" data-row="${i}" inputmode="decimal" placeholder="0.00" oninput="calcUSD()"></td>
     <td><input type="text" data-row="${i}" placeholder="—"></td>
-    <td><input type="text" data-row="${i}" placeholder="—"></td>
   `;
   return tr;
 }
@@ -542,7 +446,6 @@ function makeKHRRow(n){
   tr.innerHTML = `
     <td class="num-label">${n}</td>
     <td><input type="text" class="cod-khr" data-row="${n}" inputmode="numeric" placeholder="0" oninput="calcKHR()"></td>
-    <td><input type="text" data-row="${n}" placeholder="—"></td>
     <td><input type="text" data-row="${n}" placeholder="—"></td>
   `;
   return tr;
@@ -656,10 +559,6 @@ function resetAll(){
   document.getElementById('s_ref_usd').textContent = '—';
   document.getElementById('s_ref_khr').textContent = '—';
   document.getElementById('copyPreview').style.display = 'none';
-  // clear images
-  imgStore.splice(0);
-  document.getElementById('imgFileInput').value = '';
-  renderImgGrid();
   syncDate();
   showToast('✅ Reset រួចរាល់!');
 }
@@ -752,82 +651,6 @@ function loadData(){
   }catch(e){}
 }
 
-// ── image upload ──────────────────────────────────────────────────────
-const imgStore = []; // { dataUrl (JPEG), name }
-
-// Resize/convert any image (HEIC, PNG, etc.) to JPEG via Canvas, max 1600px
-function processImage(file){
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const MAX = 1600;
-        let w = img.naturalWidth, h = img.naturalHeight;
-        if(w > MAX || h > MAX){
-          if(w >= h){ h = Math.round(h * MAX / w); w = MAX; }
-          else { w = Math.round(w * MAX / h); h = MAX; }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        // Export as JPEG quality 0.92 — sharp, compatible with all apps
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-        resolve({ dataUrl, name: file.name.replace(/\.[^.]+$/, '.jpg') });
-      };
-      img.onerror = () => resolve(null);
-      img.src = e.target.result;
-    };
-    reader.onerror = () => resolve(null);
-    reader.readAsDataURL(file);
-  });
-}
-
-async function handleImgUpload(input){
-  const files = Array.from(input.files);
-  const remaining = 20 - imgStore.length;
-  if(remaining <= 0){ showToast('⚠️ អាចដាក់បានត្រឹម 20 រូបប៉ុណ្ណោះ'); input.value=''; return; }
-  const toAdd = files.slice(0, remaining);
-  if(files.length > remaining) showToast(`⚠️ បន្ថែមត្រឹម ${toAdd.length} រូប`);
-
-  for(const file of toAdd){
-    const result = await processImage(file);
-    if(result) imgStore.push(result);
-  }
-  input.value = '';
-  renderImgGrid();
-}
-
-function renderImgGrid(){
-  const grid = document.getElementById('imgGrid');
-  const count = document.getElementById('imgCount');
-  count.textContent = `${imgStore.length} / 20`;
-  grid.innerHTML = '';
-  imgStore.forEach((img, idx) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'img-thumb-wrap';
-
-    const im = document.createElement('img');
-    im.src = img.dataUrl;
-    im.alt = img.name;
-
-    const num = document.createElement('span');
-    num.className = 'img-num';
-    num.textContent = idx + 1;
-
-    const del = document.createElement('button');
-    del.className = 'img-thumb-del';
-    del.textContent = '✕';
-    del.onclick = () => { imgStore.splice(idx, 1); renderImgGrid(); };
-
-    wrap.appendChild(im);
-    wrap.appendChild(num);
-    wrap.appendChild(del);
-    grid.appendChild(wrap);
-  });
-}
-
 // ── share to Telegram ─────────────────────────────────────────────────
 // ── preview modal before sharing ─────────────────────────────────────
 function shareToTelegram(){
@@ -840,15 +663,7 @@ function showSharePreview(txt){
   const existing = document.getElementById('tgPreviewModal');
   if(existing) existing.remove();
 
-  // Build image preview HTML
-  let imgHtml = '';
-  if(imgStore.length > 0){
-    imgHtml = `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:0;padding-bottom:0;">`;
-    imgStore.forEach((item,i)=>{
-      imgHtml += `<img src="${item.dataUrl}" style="width:calc(50% - 2px);height:120px;object-fit:cover;border-radius:${i===0?'8px 0 0 0':i===1?'0 8px 0 0':i===imgStore.length-1&&i%2===0?'0 0 0 8px':'0 0 8px 0'};flex-shrink:0;">`;
-    });
-    imgHtml += `</div>`;
-  }
+  const imgHtml = '';
 
   const modal = document.createElement('div');
   modal.id = 'tgPreviewModal';
@@ -897,45 +712,6 @@ async function doShareTelegram(){
     }
   }
 
-  async function buildFiles(){
-    return Promise.all(imgStore.map(async(item,i)=>{
-      const res=await fetch(item.dataUrl);
-      const blob=await res.blob();
-      return new File([blob],`cod_${i+1}.jpg`,{type:'image/jpeg'});
-    }));
-  }
-
-  // ── With images: share files + text TOGETHER in one call ──────────
-  // Telegram interprets this as: album (all photos grouped) + caption text below.
-  // This is the native Telegram album+caption behavior.
-  if(imgStore.length > 0){
-    if(navigator.share && navigator.canShare){
-      try{
-        const files = await buildFiles();
-        // Always pass text together with files so Telegram attaches it as caption
-        const payload = { files, text: txt };
-        if(navigator.canShare(payload)){
-          await navigator.share(payload);
-          return;
-        }
-        // If browser rejects files+text combo, try files-only + copy text
-        const payloadFilesOnly = { files };
-        if(navigator.canShare(payloadFilesOnly)){
-          await copyTxt();
-          await navigator.share(payloadFilesOnly);
-          showToast('📋 Text copied — paste below album in Telegram');
-          return;
-        }
-      }catch(err){
-        if(err.name==='AbortError') return;
-      }
-    }
-    // Fallback: copy text, open Telegram
-    await copyTxt();
-    showToast('📋 Text Copy ហើយ! បើក Telegram → Paste');
-    return;
-  }
-
   // ── No images: text only ──────────────────────────────────────────
   if(navigator.share){
     try{
@@ -976,7 +752,7 @@ document.getElementById('theDate').addEventListener('change', syncDate);
   <!-- Column Header Edit Modal -->
   <div id="colEditModal">
     <div class="col-modal-box">
-      <h3>✏️ កែ Column Header</h3>
+      <h3>✏️ កែឈ្មោះ Column (ប្តូរ / បន្ថែម / លុបអក្សរ)</h3>
       <label>ឈ្មោះ (Name)</label>
       <input type="text" id="colEditName" placeholder="Column name...">
       <label>ឈ្មោះតូច (Sub-label)</label>
@@ -1033,9 +809,33 @@ document.getElementById('theDate').addEventListener('change', syncDate);
     _editingTh.innerHTML = name + (sub ? `<br><small style="font-size:${Math.max(9,size-3)}px">${sub}</small>` : '');
     // restore dblclick
     const th = _editingTh;
-    th.ondblclick = () => editColHeader(th, '', 0);
+    try{
+      const store = JSON.parse(localStorage.getItem('cod_headers')||'{}');
+      store[th.dataset.col] = {html: th.innerHTML, color, size};
+      localStorage.setItem('cod_headers', JSON.stringify(store));
+    }catch(e){}
     closeColModal();
   }
+
+  // tap/click any header to edit it
+  document.addEventListener('click', function(e){
+    const th = e.target.closest && e.target.closest('th[data-col]');
+    if(th) editColHeader(th);
+  });
+
+  // restore saved header edits
+  (function(){
+    try{
+      const store = JSON.parse(localStorage.getItem('cod_headers')||'{}');
+      Object.keys(store).forEach(k=>{
+        const th = document.querySelector('th[data-col="'+k+'"]');
+        if(!th) return;
+        th.innerHTML = store[k].html;
+        th.style.color = store[k].color;
+        th.style.fontSize = store[k].size + 'px';
+      });
+    }catch(e){}
+  })();
 
   // close modal on backdrop click
   document.getElementById('colEditModal').addEventListener('click', function(e){
@@ -1046,14 +846,13 @@ document.getElementById('theDate').addEventListener('change', syncDate);
   let usdExtraCols = 0;
   function addColUSD() {
     usdExtraCols++;
-    const idx = 4 + usdExtraCols - 1;
+    const idx = 3 + usdExtraCols - 1;
     // Add th before the ctrl th
     const ctrlTh = document.querySelector('#theadUSDRow .col-ctrl-th');
     const th = document.createElement('th');
     th.dataset.col = 'usd-extra-' + idx;
     th.textContent = 'Col ' + (idx+1);
     th.style.fontSize = '13px';
-    th.ondblclick = () => editColHeader(th,'usd',idx);
     ctrlTh.parentNode.insertBefore(th, ctrlTh);
     // Add td to every USD data row
     document.querySelectorAll('#tbodyUSD tr').forEach(tr => {
@@ -1088,13 +887,12 @@ document.getElementById('theDate').addEventListener('change', syncDate);
   let khrExtraCols = 0;
   function addColKHR() {
     khrExtraCols++;
-    const idx = 4 + khrExtraCols - 1;
+    const idx = 3 + khrExtraCols - 1;
     const ctrlTh = document.querySelector('#theadKHRRow .col-ctrl-th');
     const th = document.createElement('th');
     th.dataset.col = 'khr-extra-' + idx;
     th.textContent = 'Col ' + (idx+1);
     th.style.fontSize = '13px';
-    th.ondblclick = () => editColHeader(th,'khr',idx);
     ctrlTh.parentNode.insertBefore(th, ctrlTh);
     document.querySelectorAll('#tbodyKHR tr').forEach(tr => {
       const td = document.createElement('td');
