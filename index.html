@@ -81,7 +81,7 @@
     background: #e8f0fb !important;
     font-weight: 700;
     color: #1a56a0;
-    width: 32px;
+    width: 44px;
     font-size: 12px;
   }
   td input {
@@ -164,11 +164,11 @@
   th[data-col]:hover::after { content:"✏️"; position:absolute; top:2px; right:3px; font-size:9px; opacity:0.6; }
 
   /* Header edit modal */
-  #colEditModal {
+  #colEditModal, #colPosModal {
     display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
     z-index:9999; align-items:center; justify-content:center;
   }
-  #colEditModal.open { display:flex; }
+  #colEditModal.open, #colPosModal.open { display:flex; }
   .col-modal-box {
     background:#fff; border-radius:14px; padding:20px 18px 16px;
     width:88%; max-width:340px;
@@ -179,7 +179,7 @@
   @keyframes slideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
   .col-modal-box h3 { font-size:14px; color:#1a56a0; margin-bottom:12px; font-weight:700; }
   .col-modal-box label { font-size:12px; color:#555; display:block; margin-top:10px; margin-bottom:3px; }
-  .col-modal-box input[type=text], .col-modal-box input[type=color], .col-modal-box input[type=range] {
+  .col-modal-box select, .col-modal-box input[type=text], .col-modal-box input[type=color], .col-modal-box input[type=range] {
     width:100%; padding:6px 8px; border:1.5px solid #b8cfe8; border-radius:7px;
     font-size:13px; font-family:inherit; outline:none;
   }
@@ -306,9 +306,9 @@
     <table id="mainTable">
       <thead id="theadUSD">
         <tr id="theadUSDRow">
-          <th style="width:30px" data-col="usd-0">#</th>
-          <th data-col="usd-1">COD Rec ($)<br><small>ចំណូលទទួល</small></th>
-          <th data-col="usd-2">Ref.<br><small>លេខឯកសារយោង</small></th>
+          <th style="width:44px" data-col="usd-0">No.</th>
+          <th data-col="usd-1">COD ប្រាក់ ($)</th>
+          <th data-col="usd-2">លេខយោងធនាគារ</th>
           <th class="col-ctrl-th" style="width:36px;background:#e8f0fa;padding:2px;">
             <button class="btn-col-del" onclick="removeColUSD()" title="ដក Column">−</button>
             <button class="btn-col-add" onclick="addColUSD()" title="បន្ថែម Column">+</button>
@@ -320,7 +320,7 @@
       </tbody>
       <tbody id="tbodySumUSD">
         <tr class="sum-row">
-          <td class="num-label">Σ$</td>
+          <td class="num-label">សរុប</td>
           <td class="sum-val" id="sumUSD">0.00 $</td>
           <td style="background:#ffe87a !important;padding:2px 4px;">
             <input type="text" id="refUSDInput" placeholder="Paste Ref. ($) នៅទីនេះ"
@@ -339,9 +339,9 @@
     <table id="khrTable">
       <thead id="theadKHR">
         <tr id="theadKHRRow">
-          <th style="width:30px" data-col="khr-0">#</th>
-          <th data-col="khr-1">COD Rec (៛)<br><small>ចំណូលទទួល</small></th>
-          <th data-col="khr-2">Ref.<br><small>លេខឯកសារយោង</small></th>
+          <th style="width:44px" data-col="khr-0">No.</th>
+          <th data-col="khr-1">COD ប្រាក់ (៛)</th>
+          <th data-col="khr-2">លេខយោងធនាគារ</th>
           <th class="col-ctrl-th" style="width:36px;background:#e8f0fa;padding:2px;">
             <button class="btn-col-del" onclick="removeColKHR()" title="ដក Column">−</button>
             <button class="btn-col-add" onclick="addColKHR()" title="បន្ថែម Column">+</button>
@@ -353,7 +353,7 @@
       </tbody>
       <tbody id="tbodySumKHR">
         <tr class="sum-row">
-          <td class="num-label">Σ៛</td>
+          <td class="num-label">សរុប</td>
           <td class="sum-val" id="sumKHR">0 ៛</td>
           <td style="background:#ffe87a !important;padding:2px 4px;">
             <input type="text" id="refKHRInput" placeholder="Paste Ref. (៛) នៅទីនេះ"
@@ -424,32 +424,33 @@ function formatDisplayDate(iso){
 
 // ── row counters ─────────────────────────────────────────────────────
 let usdRowCount = 10;
-let khrStartNum = 13;
+let khrStartNum = 1;
 let khrRowCount = 4;
 
-// ── make a USD row ────────────────────────────────────────────────────
-function makeUSDRow(i){
-  const tr = document.createElement('tr');
-  tr.dataset.rowNum = i;
-  tr.innerHTML = `
-    <td class="num-label">${i}</td>
-    <td><input type="text" class="cod-usd" data-row="${i}" inputmode="decimal" placeholder="0.00" oninput="calcUSD()"></td>
-    <td><input type="text" data-row="${i}" placeholder="—"></td>
-  `;
-  return tr;
-}
-
-// ── make a KHR row ────────────────────────────────────────────────────
-function makeKHRRow(n){
+// ── make a row that follows the current header columns ───────────────
+function makeRow(key, n){
   const tr = document.createElement('tr');
   tr.dataset.rowNum = n;
-  tr.innerHTML = `
-    <td class="num-label">${n}</td>
-    <td><input type="text" class="cod-khr" data-row="${n}" inputmode="numeric" placeholder="0" oninput="calcKHR()"></td>
-    <td><input type="text" data-row="${n}" placeholder="—"></td>
-  `;
+  const ths = Array.from(document.getElementById(key==='usd'?'theadUSDRow':'theadKHRRow').querySelectorAll('th'))
+    .filter(t=>!t.classList.contains('col-ctrl-th'));
+  ths.forEach(th=>{
+    const dc = th.dataset.col || '';
+    const td = document.createElement('td');
+    if(dc === key+'-0'){
+      td.className = 'num-label'; td.textContent = n;
+    } else if(dc === key+'-1'){
+      td.innerHTML = key==='usd'
+        ? `<input type="text" class="cod-usd" data-row="${n}" inputmode="decimal" placeholder="0.00" oninput="calcUSD()">`
+        : `<input type="text" class="cod-khr" data-row="${n}" inputmode="numeric" placeholder="0" oninput="calcKHR()">`;
+    } else {
+      td.innerHTML = `<input type="text" data-row="${n}" placeholder="—">`;
+    }
+    tr.appendChild(td);
+  });
   return tr;
 }
+function makeUSDRow(i){ return makeRow('usd', i); }
+function makeKHRRow(n){ return makeRow('khr', n); }
 
 // ── add/remove USD rows ───────────────────────────────────────────────
 function addRowUSD(){
@@ -554,8 +555,8 @@ function resetAll(){
   document.getElementById('sumKHR').textContent = '0 ៛';
   document.getElementById('s_usd').textContent = '0.00 $';
   document.getElementById('s_khr').textContent = '0 ៛';
-  document.getElementById('refUSDInput').value = '';
-  document.getElementById('refKHRInput').value = '';
+  const ru = document.getElementById('refUSDInput'); if(ru) ru.value = '';
+  const rk = document.getElementById('refKHRInput'); if(rk) rk.value = '';
   document.getElementById('s_ref_usd').textContent = '—';
   document.getElementById('s_ref_khr').textContent = '—';
   document.getElementById('copyPreview').style.display = 'none';
@@ -568,19 +569,20 @@ function buildText(){
   const date  = formatDisplayDate(document.getElementById('theDate').value);
   const sumUSDEl = document.getElementById('sumUSDInput'); const usd = (sumUSDEl && sumUSDEl.value.trim()) ? sumUSDEl.value.trim() : document.getElementById('s_usd').textContent;
   const sumKHREl = document.getElementById('sumKHRInput'); const khr = (sumKHREl && sumKHREl.value.trim()) ? sumKHREl.value.trim() : document.getElementById('s_khr').textContent;
-  const refU  = document.getElementById('s_ref_usd').textContent;
-  const refK  = document.getElementById('s_ref_khr').textContent;
+  const refU  = document.getElementById('s_ref_usd').textContent.replace(/^—$/,'');
+  const refK  = document.getElementById('s_ref_khr').textContent.replace(/^—$/,'');
 
   return [
     'ភ្នាក់ងារ ភូមិត្មាតពង ផ្លូវ51 (KS)',
     'វេរប្រាក់ COD ខេត្ត',
     `ថ្ងៃទី  ${date}`,
-    '──────────',
+    '',
     `លុយដុល្លារ÷ ($)  ${usd}`,
     `លុយខ្មែរ÷ (៛)     ${khr}`,
-    '──────────',
+    '',
     `លេខកូដប្រតិបត្តិការ ($):  ${refU}`,
     `លេខកូដប្រតិបត្តិការ (៛):  ${refK}`,
+    '',
     '🙏 សូមអរគុណ',
   ].join('\n');
 }
@@ -608,6 +610,19 @@ function fallbackCopy(txt){
   showToast('📋 Copy រួចរាល់!');
 }
 
+// amount first, then the other inputs in column order
+function rowVals(tr, cls){
+  const amt = tr.querySelector(cls);
+  const others = [...tr.querySelectorAll('input')].filter(i=>i!==amt);
+  return [amt ? amt.value : '', ...others.map(i=>i.value)];
+}
+function setRowVals(tr, cls, row){
+  const amt = tr.querySelector(cls);
+  const others = [...tr.querySelectorAll('input')].filter(i=>i!==amt);
+  if(amt) amt.value = row[0] || '';
+  others.forEach((inp,i)=>{ if(row[i+1] !== undefined) inp.value = row[i+1]; });
+}
+
 // ── save ─────────────────────────────────────────────────────────────
 function saveData(){
   const data = {
@@ -616,12 +631,10 @@ function saveData(){
     rows_khr: [],
   };
   document.querySelectorAll('#tbodyUSD tr').forEach(tr=>{
-    const inputs = tr.querySelectorAll('input');
-    data.rows_usd.push([...inputs].map(i=>i.value));
+    data.rows_usd.push(rowVals(tr,'.cod-usd'));
   });
   document.querySelectorAll('#tbodyKHR tr').forEach(tr=>{
-    const inputs = tr.querySelectorAll('input');
-    data.rows_khr.push([...inputs].map(i=>i.value));
+    data.rows_khr.push(rowVals(tr,'.cod-khr'));
   });
   const siU2 = document.getElementById('sumUSDInput'); data.sumUSD = siU2 ? siU2.value : '';
   const siK2 = document.getElementById('sumKHRInput'); data.sumKHR = siK2 ? siK2.value : '';
@@ -637,13 +650,11 @@ function loadData(){
     if(data.date) document.getElementById('theDate').value = data.date;
     const usdRows = document.querySelectorAll('#tbodyUSD tr');
     data.rows_usd.forEach((row, ri)=>{
-      const inputs = usdRows[ri]?.querySelectorAll('input');
-      if(inputs) row.forEach((v,ci)=>{ if(inputs[ci]) inputs[ci].value = v; });
+      if(usdRows[ri]) setRowVals(usdRows[ri],'.cod-usd',row);
     });
     const khrRows = document.querySelectorAll('#tbodyKHR tr');
     data.rows_khr.forEach((row, ri)=>{
-      const inputs = khrRows[ri]?.querySelectorAll('input');
-      if(inputs) row.forEach((v,ci)=>{ if(inputs[ci]) inputs[ci].value = v; });
+      if(khrRows[ri]) setRowVals(khrRows[ri],'.cod-khr',row);
     });
     calcUSD(); calcKHR(); syncDate();
     const siU3 = document.getElementById('sumUSDInput'); if(siU3 && data.sumUSD){ siU3.value = data.sumUSD; overrideUSD(); }
@@ -655,7 +666,16 @@ function loadData(){
 // ── preview modal before sharing ─────────────────────────────────────
 function shareToTelegram(){
   const txt = buildText();
-  showSharePreview(txt);
+  // best-effort copy so the text is on the clipboard if Telegram doesn't take it
+  try{ navigator.clipboard && navigator.clipboard.writeText(txt); }catch(e){}
+  // open the Telegram app straight to its share screen
+  window.location.href = 'tg://msg?text=' + encodeURIComponent(txt);
+  // if the app didn't open (page still visible), use Telegram's web share link
+  setTimeout(()=>{
+    if(!document.hidden){
+      window.location.href = 'https://t.me/share/url?url=%20&text=' + encodeURIComponent(txt);
+    }
+  }, 1500);
 }
 
 function showSharePreview(txt){
@@ -748,6 +768,23 @@ loadData();
 // date change listener
 document.getElementById('theDate').addEventListener('change', syncDate);
 </script>
+
+  <!-- Column position picker -->
+  <div id="colPosModal">
+    <div class="col-modal-box">
+      <h3 id="colPosTitle"></h3>
+      <div id="colPosNameWrap">
+        <label>ឈ្មោះ Column ថ្មី</label>
+        <input type="text" id="colPosName" placeholder="ឈ្មោះ Column...">
+      </div>
+      <label id="colPosLabel"></label>
+      <select id="colPosSelect"></select>
+      <div class="col-modal-actions">
+        <button class="btn-modal-cancel" onclick="closeColPicker()">បោះបង់</button>
+        <button class="btn-modal-save" id="colPosOk" onclick="applyColPicker()">យល់ព្រម</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Column Header Edit Modal -->
   <div id="colEditModal">
@@ -842,82 +879,76 @@ document.getElementById('theDate').addEventListener('change', syncDate);
     if(e.target === this) closeColModal();
   });
 
-  // ── add/remove columns USD ────────────────────────────────────────
-  let usdExtraCols = 0;
-  function addColUSD() {
-    usdExtraCols++;
-    const idx = 3 + usdExtraCols - 1;
-    // Add th before the ctrl th
-    const ctrlTh = document.querySelector('#theadUSDRow .col-ctrl-th');
-    const th = document.createElement('th');
-    th.dataset.col = 'usd-extra-' + idx;
-    th.textContent = 'Col ' + (idx+1);
-    th.style.fontSize = '13px';
-    ctrlTh.parentNode.insertBefore(th, ctrlTh);
-    // Add td to every USD data row
-    document.querySelectorAll('#tbodyUSD tr').forEach(tr => {
-      const td = document.createElement('td');
-      td.innerHTML = '<input type="text" placeholder="—" style="width:100%;border:none;background:transparent;text-align:center;font-size:12px;font-family:inherit;outline:none;">';
-      tr.appendChild(td);
-    });
-    // Add td to sum row (empty yellow)
-    document.querySelectorAll('#tbodySumUSD tr').forEach(tr => {
-      const td = document.createElement('td');
-      td.style.background = '#ffe87a';
-      tr.appendChild(td);
-    });
+  // ── add/remove columns at a chosen position ──────────────────────
+  let _colSeq = 0, _colPick = null;
+  function colHeaderRow(key){ return document.getElementById(key==='usd'?'theadUSDRow':'theadKHRRow'); }
+  function colHeaders(key){
+    return Array.from(colHeaderRow(key).querySelectorAll('th')).filter(t=>!t.classList.contains('col-ctrl-th'));
   }
+  function colName(th){
+    const c = th.cloneNode(true); const sm = c.querySelector('small'); if(sm) sm.remove();
+    return c.textContent.trim() || '(គ្មានឈ្មោះ)';
+  }
+  function openColPicker(key, mode){
+    _colPick = {key, mode};
+    const sel = document.getElementById('colPosSelect');
+    sel.innerHTML = '';
+    colHeaders(key).forEach((th,i)=>{
+      const dc = th.dataset.col || '';
+      // "No." and the COD amount column are needed for numbering / totals
+      if(mode==='del' && (dc===key+'-0' || dc===key+'-1')) return;
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = (i+1) + '. ' + colName(th);
+      sel.appendChild(o);
+    });
+    const label = key==='usd' ? 'USD' : 'KHR';
+    document.getElementById('colPosTitle').textContent = (mode==='add' ? '＋ បន្ថែម Column ' : '－ លុប Column ') + label;
+    document.getElementById('colPosLabel').textContent = mode==='add' ? 'ដាក់នៅពីក្រោយ Column ណា?' : 'ជ្រើស Column ដែលចង់លុប';
+    document.getElementById('colPosNameWrap').style.display = mode==='add' ? 'block' : 'none';
+    document.getElementById('colPosName').value = '';
+    document.getElementById('colPosOk').textContent = mode==='add' ? 'បន្ថែម' : 'លុប';
+    document.getElementById('colPosModal').classList.add('open');
+  }
+  function closeColPicker(){ document.getElementById('colPosModal').classList.remove('open'); _colPick = null; }
 
-  function removeColUSD() {
-    if(usdExtraCols <= 0){ showToast('⚠️ គ្មាន Column ដែលអាចដកបាន'); return; }
-    // Remove last extra th
-    const ths = document.querySelectorAll('#theadUSDRow th[data-col^="usd-extra"]');
-    if(ths.length) ths[ths.length-1].remove();
-    // Remove last td from each data row
-    document.querySelectorAll('#tbodyUSD tr').forEach(tr => {
-      if(tr.cells.length > 2) tr.deleteCell(-1);
-    });
-    document.querySelectorAll('#tbodySumUSD tr').forEach(tr => {
-      if(tr.cells.length > 2) tr.deleteCell(-1);
-    });
-    usdExtraCols--;
+  function applyColPicker(){
+    if(!_colPick) return;
+    const {key, mode} = _colPick;
+    const idx = parseInt(document.getElementById('colPosSelect').value);
+    if(isNaN(idx)){ closeColPicker(); return; }
+    const hrow = colHeaderRow(key);
+    const dataRows = document.querySelectorAll(key==='usd' ? '#tbodyUSD tr' : '#tbodyKHR tr');
+    const sumRows  = document.querySelectorAll(key==='usd' ? '#tbodySumUSD tr' : '#tbodySumKHR tr');
+    if(mode==='add'){
+      const name = document.getElementById('colPosName').value.trim() || ('Col ' + (colHeaders(key).length+1));
+      const th = document.createElement('th');
+      th.dataset.col = key + '-x' + (++_colSeq);
+      th.style.fontSize = '13px';
+      th.textContent = name;
+      hrow.insertBefore(th, hrow.cells[idx].nextSibling);
+      dataRows.forEach(tr=>{
+        const td = tr.insertCell(idx+1);
+        td.innerHTML = '<input type="text" placeholder="—">';
+      });
+      sumRows.forEach(tr=>{
+        const td = tr.insertCell(idx+1);
+        td.style.background = '#ffe87a';
+      });
+    } else {
+      hrow.cells[idx].remove();
+      dataRows.forEach(tr=>tr.deleteCell(idx));
+      sumRows.forEach(tr=>tr.deleteCell(idx));
+    }
+    closeColPicker();
+    calcUSD(); calcKHR();
   }
+  document.getElementById('colPosModal').addEventListener('click', function(e){ if(e.target===this) closeColPicker(); });
 
-  // ── add/remove columns KHR ────────────────────────────────────────
-  let khrExtraCols = 0;
-  function addColKHR() {
-    khrExtraCols++;
-    const idx = 3 + khrExtraCols - 1;
-    const ctrlTh = document.querySelector('#theadKHRRow .col-ctrl-th');
-    const th = document.createElement('th');
-    th.dataset.col = 'khr-extra-' + idx;
-    th.textContent = 'Col ' + (idx+1);
-    th.style.fontSize = '13px';
-    ctrlTh.parentNode.insertBefore(th, ctrlTh);
-    document.querySelectorAll('#tbodyKHR tr').forEach(tr => {
-      const td = document.createElement('td');
-      td.innerHTML = '<input type="text" placeholder="—" style="width:100%;border:none;background:transparent;text-align:center;font-size:12px;font-family:inherit;outline:none;">';
-      tr.appendChild(td);
-    });
-    document.querySelectorAll('#tbodySumKHR tr').forEach(tr => {
-      const td = document.createElement('td');
-      td.style.background = '#ffe87a';
-      tr.appendChild(td);
-    });
-  }
-
-  function removeColKHR() {
-    if(khrExtraCols <= 0){ showToast('⚠️ គ្មាន Column ដែលអាចដកបាន'); return; }
-    const ths = document.querySelectorAll('#theadKHRRow th[data-col^="khr-extra"]');
-    if(ths.length) ths[ths.length-1].remove();
-    document.querySelectorAll('#tbodyKHR tr').forEach(tr => {
-      if(tr.cells.length > 2) tr.deleteCell(-1);
-    });
-    document.querySelectorAll('#tbodySumKHR tr').forEach(tr => {
-      if(tr.cells.length > 2) tr.deleteCell(-1);
-    });
-    khrExtraCols--;
-  }
+  function addColUSD(){ openColPicker('usd','add'); }
+  function removeColUSD(){ openColPicker('usd','del'); }
+  function addColKHR(){ openColPicker('khr','add'); }
+  function removeColKHR(){ openColPicker('khr','del'); }
   </script>
 </body>
 </html>
