@@ -337,27 +337,45 @@
   }
 
   ::selection{ background: var(--amber-soft); }
+
+  /* ===== v30 compact colourful top bar ===== */
+  header{ padding: calc(3px + env(safe-area-inset-top,0px)) 4px 3px; }
+  .hrow{ display:flex; gap:3px; align-items:flex-start; }
+  .hrow nav.tabs{ flex:1 1 auto; margin:0; padding:2px; gap:3px; border-radius:10px; }
+  nav.tabs button{ flex:1 1 auto; height:21px; padding:0 7px; font-size:12.5px; line-height:21px; border-radius:7px;
+    color:#fff; font-weight:700; white-space:nowrap; opacity:.72; filter:saturate(.85);
+    box-shadow:0 1px 3px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.35); transition:opacity .15s, transform .1s; }
+  nav.tabs button:active{ transform:scale(.96); }
+  nav.tabs button.active{ opacity:1; filter:none; box-shadow:0 2px 7px rgba(0,0,0,.32), inset 0 0 0 1.5px rgba(255,255,255,.95); }
+  nav.tabs button:nth-child(1){ background:linear-gradient(135deg,#0ea5e9,#2563eb); }
+  nav.tabs button:nth-child(2){ background:linear-gradient(135deg,#a78bfa,#6d28d9); }
+  nav.tabs button:nth-child(3){ background:linear-gradient(135deg,#fbbf24,#ea580c); }
+  nav.tabs button:nth-child(4){ background:linear-gradient(135deg,#34d399,#059669); }
+  nav.tabs button:nth-child(5){ background:linear-gradient(135deg,#fb7185,#be123c); }
+  nav.tabs button:nth-child(6){ background:linear-gradient(135deg,#22d3ee,#0e7490); }
+  nav.tabs button:nth-child(7){ background:linear-gradient(135deg,#f472b6,#a21caf); }
+  .hrow .theme-btn{ width:21px; height:21px; padding:0; border-radius:7px; font-size:12px; line-height:19px; flex:0 0 auto; margin-top:2px; }
+  nav.subtabs{ margin-top:3px; padding:2px; gap:3px; border-radius:10px; }
+  nav.subtabs button{ height:21px; padding:0 6px; font-size:12.5px; line-height:21px; border-radius:7px; }
+  nav.subtabs button.active{ background:linear-gradient(135deg,#14b8a6,#0f766e); color:#fff; box-shadow:0 2px 6px rgba(15,118,110,.4); }
+  main{ padding: 6px 8px 60px; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="brand">
-    <div>
-      <h1>ចុះលេខទូរស័ព្ទ + QR</h1>
-      <div class="tag">ត្មាតពង VET Agency — Logistics</div>
-    </div>
-    <button class="theme-btn" id="themeToggle" title="ប្តូរស្បែក">◐</button>
-  </div>
+  <div class="hrow">
   <nav class="tabs">
     <button data-view="guest" class="active">ស្គេនលេខភ្ញៀវ</button>
     <button data-view="print">លេខភ្ញៀវ</button>
     <button data-view="cod">ធ្វើ COD</button>
     <button data-view="cal">កាស្យូ</button>
     <button data-view="d1">លុប/ចំណាយ ប៉ុង</button>
-    <button data-view="car">ជើងឡាន</button>
-    <button data-view="rep">📊 ធ្វើរបាយការណ៍</button>
+    <button data-view="car">ធ្វើជើងឡាន</button>
+    <button data-view="rep">ធ្វើរបាយការណ៍</button>
   </nav>
+  <button class="theme-btn" id="themeToggle" title="ប្តូរស្បែក">◐</button>
+  </div>
   <nav class="subtabs" id="guestSub">
     <button data-sub="scan" class="active">ស្កេន</button>
     <button data-sub="list">បញ្ជី</button>
