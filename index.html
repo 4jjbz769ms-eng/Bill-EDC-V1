@@ -383,6 +383,20 @@
   .gmenu button[data-g="add"]  .ic{ background:linear-gradient(135deg,#fbbf24,#ea580c); }
   .gmenu button.on{ background:linear-gradient(135deg,rgba(56,189,248,.55),rgba(99,102,241,.55)); box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.8), 0 2px 8px rgba(0,0,0,.3); }
   .gmenu button.on::after{ content:"✓"; margin-left:auto; font-size:13px; }
+
+  /* ===== v33 label settings / excel ===== */
+  .lbl-set{ margin-top:12px; border:1px solid var(--line); border-radius:12px; background:var(--paper-raised); padding:6px 10px; }
+  .lbl-set summary{ cursor:pointer; font-weight:700; font-size:14px; padding:4px 0; color:var(--ink); }
+  .lbl-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; margin:8px 0 4px; }
+  .lbl-grid .full{ grid-column:1 / -1; }
+  .lbl-grid label{ font-size:12.5px; font-weight:600; margin:0 0 3px; display:block; }
+  .lbl-grid input[type="text"], .lbl-grid input[type="number"], .lbl-grid select{ width:100%; font:inherit; font-size:14px; padding:6px 8px; border:1.5px solid var(--line); border-radius:8px; background:var(--paper); color:var(--ink); }
+  .lbl-grid input[type="color"]{ width:100%; height:34px; padding:2px; border:1.5px solid var(--line); border-radius:8px; background:var(--paper); }
+  .lbl-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .qr-preview canvas{ max-width:100%; height:auto; }
+  .detail-qr canvas{ max-width:100%; height:auto; }
+  .xlsx-row{ display:flex; gap:8px; margin:0 0 10px; }
+  .xlsx-row .btn{ flex:1; background:linear-gradient(135deg,#16a34a,#0f766e); color:#fff; border:0; font-weight:700; }
 </style>
 </head>
 <body>
@@ -487,6 +501,7 @@
     <div class="search-row">
       <input type="search" id="searchInput" placeholder="ស្វែងរកលេខ ឬឈ្មោះ…">
     </div>
+    <div class="xlsx-row"><button class="btn btn-sm" id="xlsxBtn" type="button">📊 ទាញយក Excel (QR + លេខ + ឈ្មោះ)</button></div>
     <div class="rec-list" id="recList"></div>
     <div class="empty" id="listEmpty">មិនទាន់មានលេខទូរស័ព្ទត្រូវបានចុះឈ្មោះទេ</div>
 
@@ -511,9 +526,23 @@
         <label for="addNote">ឈ្មោះ / ចំណាំ (មិនចាំបាច់)</label>
         <input type="text" id="addNote" placeholder="ឧទាហរណ៍ បងស្រី សុខា">
       </div>
-      <div class="qr-preview" id="addPreviewWrap" style="display:none;">
+      <div class="qr-preview" id="addPreviewWrap">
         <canvas id="addPreviewCanvas"></canvas>
+        <div class="hint" id="addPreviewHint" style="font-size:12px;color:var(--ink-soft);margin-top:4px;">រូបគំរូស្លាក (ដូចរូបដែលនឹង Save PNG)</div>
       </div>
+      <details class="lbl-set" id="lblSet">
+        <summary>🏷️ អក្សរក្បាលស្លាក &amp; ភាពច្បាស់ PNG</summary>
+        <div class="lbl-grid">
+          <div class="full lbl-row"><label style="margin:0;display:inline-flex;gap:6px;align-items:center;"><input type="checkbox" id="lblOn"> បង្ហាញអក្សរជាប់ QR ស្វ័យប្រវត្តិ</label>
+            <button type="button" class="btn btn-ghost btn-sm" id="lblDel">🗑 លុបអក្សរ</button></div>
+          <div class="full"><label for="lblText">អក្សរ</label><input type="text" id="lblText" maxlength="60" placeholder="VET ត្មាតពង"></div>
+          <div><label for="lblSize">ទំហំអក្សរ</label><input type="number" id="lblSize" min="10" max="90" step="1"></div>
+          <div><label for="lblColor">ពណ៌</label><input type="color" id="lblColor"></div>
+          <div><label for="lblPos">ទីតាំង</label><select id="lblPos"><option value="top">ខាងលើ QR</option><option value="bottom">ខាងក្រោមបំផុត</option></select></div>
+          <div><label for="lblRes">ភាពច្បាស់ PNG</label><select id="lblRes"><option value="12">ធម្មតា</option><option value="20">ច្បាស់</option><option value="32">ច្បាស់ខ្លាំង (Niimbot)</option></select></div>
+          <div class="full"><button type="button" class="btn btn-ghost btn-sm" id="lblReset">↺ ត្រឡប់ទៅលំនាំដើម (ខ្មៅ)</button></div>
+        </div>
+      </details>
       <div class="form-actions">
         <button class="btn btn-primary" id="saveNewBtn">រក្សាទុក + បង្កើត QR</button>
       </div>
@@ -645,8 +674,8 @@
     <div class="detail-qr">
       <canvas id="detailCanvas"></canvas>
     </div>
-    <div class="detail-num mono" id="detailNum"></div>
-    <div class="detail-note" id="detailNote"></div>
+    <div class="detail-num mono" id="detailNum" style="display:none"></div>
+    <div class="detail-note" id="detailNote" style="display:none"></div>
 
     <div class="field" style="margin-top:18px;">
       <label for="editPhone">លេខទូរស័ព្ទ</label>
@@ -865,7 +894,7 @@
     var ctx = canvas.getContext("2d");
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, size, size);
-    ctx.fillStyle = "#111111";
+    ctx.fillStyle = "#000000";
     for(var r = 0; r < count; r++){
       for(var c = 0; c < count; c++){
         if(qr.isDark(r, c)){
@@ -1052,6 +1081,22 @@
   }
   searchInput.addEventListener("input", renderList);
 
+  /* ----- label settings (kept in this browser) ----- */
+  var LBL_KEY = "vet_label_set_v1";
+  var LBL_DEF = { on:true, text:"VET ត្មាតពង", size:30, color:"#000000", pos:"top", res:20 };
+  var LBL = {}; for(var _k in LBL_DEF) LBL[_k] = LBL_DEF[_k];
+  try{ var _s = JSON.parse(localStorage.getItem(LBL_KEY) || "null"); if(_s && typeof _s === "object") for(var _j in _s) if(_j in LBL_DEF) LBL[_j] = _s[_j]; }catch(e){}
+  function lblClean(){
+    LBL.on = !!LBL.on; LBL.text = String(LBL.text == null ? "" : LBL.text).slice(0, 60);
+    LBL.size = Math.min(90, Math.max(10, Math.round(+LBL.size) || LBL_DEF.size));
+    if(!/^#[0-9a-fA-F]{6}$/.test(String(LBL.color))) LBL.color = "#000000";
+    if(LBL.pos !== "top" && LBL.pos !== "bottom") LBL.pos = "top";
+    LBL.res = [12, 20, 32].indexOf(+LBL.res) >= 0 ? +LBL.res : 20;
+  }
+  lblClean();
+  var FONT_KH = '"Noto Sans Khmer","Khmer OS Battambang","Khmer OS",sans-serif';
+  var FONT_NUM = '"JetBrains Mono","Noto Sans Khmer",ui-monospace,monospace';
+
   // ---------- add ----------
   var addPhone = document.getElementById("addPhone");
   var addNote = document.getElementById("addNote");
@@ -1059,15 +1104,26 @@
   var addPreviewCanvas = document.getElementById("addPreviewCanvas");
 
   function refreshAddPreview(){
-    var v = norm(addPhone.value);
-    if(v.length >= 3){
-      addPreviewWrap.style.display = "block";
-      drawQR(addPreviewCanvas, v, 6, 3);
-    }else{
-      addPreviewWrap.style.display = "none";
-    }
+    var v = norm(addPhone.value), sample = v.length < 3;
+    drawLabelInto(addPreviewCanvas, { phone: sample ? "012345678" : v, note: norm(addNote.value) }, 8);
+    addPreviewCanvas.style.opacity = sample ? ".45" : "1";
+    document.getElementById("addPreviewHint").textContent = sample ? "រូបគំរូ (វាយលេខដើម្បីមើលរូបពិត)" : "រូបគំរូស្លាក (ដូចរូបដែលនឹង Save PNG)";
   }
   addPhone.addEventListener("input", refreshAddPreview);
+  addNote.addEventListener("input", refreshAddPreview);
+  /* label settings UI */
+  var lblEls = { on: document.getElementById("lblOn"), text: document.getElementById("lblText"), size: document.getElementById("lblSize"),
+                 color: document.getElementById("lblColor"), pos: document.getElementById("lblPos"), res: document.getElementById("lblRes") };
+  function lblToUI(){ lblEls.on.checked = LBL.on; lblEls.text.value = LBL.text; lblEls.size.value = LBL.size; lblEls.color.value = LBL.color; lblEls.pos.value = LBL.pos; lblEls.res.value = String(LBL.res); }
+  function lblFromUI(){
+    LBL.on = lblEls.on.checked; LBL.text = lblEls.text.value; LBL.size = lblEls.size.value; LBL.color = lblEls.color.value; LBL.pos = lblEls.pos.value; LBL.res = lblEls.res.value;
+    lblClean(); try{ localStorage.setItem(LBL_KEY, JSON.stringify(LBL)); }catch(e){}
+    refreshAddPreview();
+  }
+  Object.keys(lblEls).forEach(function(k){ lblEls[k].addEventListener("input", lblFromUI); lblEls[k].addEventListener("change", lblFromUI); });
+  document.getElementById("lblDel").addEventListener("click", function(){ lblEls.text.value = ""; lblEls.on.checked = false; lblFromUI(); });
+  document.getElementById("lblReset").addEventListener("click", function(){ for(var k in LBL_DEF) LBL[k] = LBL_DEF[k]; lblToUI(); lblFromUI(); });
+  lblToUI(); refreshAddPreview();
 
   document.getElementById("saveNewBtn").addEventListener("click", function(){
     var phone = norm(addPhone.value);
@@ -1081,7 +1137,7 @@
     records.push(rec);
     saveRecords(records);
     addPhone.value = ""; addNote.value = "";
-    addPreviewWrap.style.display = "none";
+    refreshAddPreview();
     openDetail(rec.id);
     showView("list");
   });
@@ -1099,7 +1155,7 @@
     var r = records.find(function(x){ return x.id === id; });
     if(!r) return;
     activeId = id;
-    drawQR(detailCanvas, r.phone, 7, 3);
+    drawLabelInto(detailCanvas, r, 8);
     detailNum.textContent = r.phone;
     detailNote.textContent = r.note || "";
     editPhone.value = r.phone;
@@ -1125,7 +1181,7 @@
     r.note = norm(editNote.value);
     r.updatedAt = Date.now();
     saveRecords(records);
-    drawQR(detailCanvas, r.phone, 7, 3);
+    drawLabelInto(detailCanvas, r, 8);
     detailNum.textContent = r.phone;
     detailNote.textContent = r.note || "";
     renderList();
@@ -1184,31 +1240,91 @@
   });
 
   // save PNG
-  function buildLabelCanvas(r, scale){
-    var qrCanvas = document.createElement("canvas");
-    drawQR(qrCanvas, r.phone, scale, 3);
-    var padTop = 24, padSide = 24, textH = r.note ? 96 : 64;
-    var out = document.createElement("canvas");
-    out.width = qrCanvas.width + padSide * 2;
-    out.height = qrCanvas.height + padTop + textH;
-    var ctx = out.getContext("2d");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, out.width, out.height);
-    ctx.drawImage(qrCanvas, padSide, padTop);
-    ctx.fillStyle = "#111111";
-    ctx.textAlign = "center";
-    ctx.font = "700 " + Math.round(scale * 5.2) + "px monospace";
-    ctx.fillText(r.phone, out.width / 2, qrCanvas.height + padTop + Math.round(scale * 5.2) + 10);
-    if(r.note){
-      ctx.font = Math.round(scale * 3.4) + "px sans-serif";
-      ctx.fillStyle = "#555555";
-      ctx.fillText(r.note, out.width / 2, qrCanvas.height + padTop + Math.round(scale * 5.2) + 40);
-    }
+  /* wrap text to a pixel width, also inside long Khmer words (no spaces) */
+  function wrapLines(ctx, text, maxW){
+    var out = [], paras = String(text || "").split(/\n/);
+    paras.forEach(function(p){
+      var line = "", words = p.split(/(\s+)/);
+      words.forEach(function(w){
+        if(!w) return;
+        if(ctx.measureText(line + w).width <= maxW){ line += w; return; }
+        if(line.trim()){ out.push(line.trim()); line = ""; }
+        if(ctx.measureText(w).width <= maxW){ line = w.replace(/^\s+/, ""); return; }
+        Array.prototype.forEach.call(w, function(ch){
+          if(ctx.measureText(line + ch).width <= maxW){ line += ch; }
+          else{ if(line) out.push(line); line = ch; }
+        });
+      });
+      if(line.trim() || !out.length) out.push(line.trim());
+    });
     return out;
   }
 
+  /* Whole sticker: [VET text] + QR + phone + name. Every size is a multiple of "mod" (pixels per QR module) so it stays sharp. */
+  function buildLabelCanvas(r, scale){
+    var mod = Math.max(4, Math.round(scale || LBL.res));
+    var qrCanvas = document.createElement("canvas");
+    drawQR(qrCanvas, r.phone, mod, 0);                       /* modules only, we add the quiet zone ourselves */
+    var qw = qrCanvas.width;
+    var measure = document.createElement("canvas").getContext("2d");
+    var quiet = 3 * mod, gap = Math.round(2.2 * mod);
+
+    var showHdr = LBL.on && LBL.text.trim();
+    var hdrPx = Math.round(LBL.size * mod / 10);
+    var phonePx = Math.round(mod * 5.2), notePx = Math.round(mod * 3.6);
+    measure.font = "700 " + phonePx + "px " + FONT_NUM;
+    var phoneW = measure.measureText(r.phone).width;
+    var hdrLines = [];
+    var W = qw + 2 * quiet;
+    if(showHdr){
+      measure.font = "700 " + hdrPx + "px " + FONT_KH;
+      var wantW = measure.measureText(LBL.text.trim()).width;
+      W = Math.max(W, Math.ceil(wantW + 2 * mod));
+      hdrLines = wrapLines(measure, LBL.text.trim(), W - 2 * mod);
+    }
+    W = Math.max(W, Math.ceil(phoneW + 2 * mod));
+    var noteLines = [];
+    if(r.note){ measure.font = notePx + "px " + FONT_KH; noteLines = wrapLines(measure, r.note, W - 3 * mod); }
+    var hdrLH = Math.round(hdrPx * 1.3), noteLH = Math.round(notePx * 1.4), phoneLH = Math.round(phonePx * 1.15);
+
+    var y = Math.round(1.6 * mod), pos = {};
+    var hdrH = hdrLines.length * hdrLH;
+    if(showHdr && LBL.pos === "top"){ pos.hdr = y; y += hdrH + gap; }
+    pos.qr = y; y += qw + gap;
+    pos.phone = y; y += phoneLH;
+    if(noteLines.length){ y += Math.round(0.5 * mod); pos.note = y; y += noteLines.length * noteLH; }
+    if(showHdr && LBL.pos === "bottom"){ y += Math.round(0.8 * mod); pos.hdr = y; y += hdrH; }
+    var H = y + Math.round(1.8 * mod);
+
+    var out = document.createElement("canvas");
+    out.width = W; out.height = H;
+    var ctx = out.getContext("2d");
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(qrCanvas, Math.round((W - qw) / 2), pos.qr);
+    ctx.imageSmoothingEnabled = true;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if(pos.hdr != null){
+      ctx.fillStyle = LBL.color; ctx.font = "700 " + hdrPx + "px " + FONT_KH;
+      hdrLines.forEach(function(t, i){ ctx.fillText(t, W / 2, pos.hdr + i * hdrLH + hdrLH / 2); });
+    }
+    ctx.fillStyle = "#000000"; ctx.font = "700 " + phonePx + "px " + FONT_NUM;
+    ctx.fillText(r.phone, W / 2, pos.phone + phoneLH / 2);
+    if(pos.note != null){
+      ctx.fillStyle = "#000000"; ctx.font = notePx + "px " + FONT_KH;
+      noteLines.forEach(function(t, i){ ctx.fillText(t, W / 2, pos.note + i * noteLH + noteLH / 2); });
+    }
+    return out;
+  }
+  function drawLabelInto(canvas, r, scale){
+    var o = buildLabelCanvas(r, scale);
+    canvas.width = o.width; canvas.height = o.height;
+    canvas.getContext("2d").drawImage(o, 0, 0);
+    return canvas;
+  }
+
   function downloadLabelPng(r){
-    var out = buildLabelCanvas(r, 10);
+    var out = buildLabelCanvas(r, LBL.res);
     out.toBlob(function(blob){
       var url = URL.createObjectURL(blob);
       var a = document.createElement("a");
@@ -1228,7 +1344,7 @@
 
   // share
   function shareLabel(r){
-    var out = buildLabelCanvas(r, 10);
+    var out = buildLabelCanvas(r, LBL.res);
     out.toBlob(function(blob){
       var file = new File([blob], "qr-" + r.phone + ".png", { type: "image/png" });
       if(navigator.canShare && navigator.canShare({ files: [file] })){
@@ -1249,8 +1365,95 @@
     shareLabel(r);
   });
 
+
+  /* ===== Excel (.xlsx) export: QR picture + phone + name, opens in Microsoft Excel ===== */
+  var CRC_T = (function(){ var t = [], c; for(var n = 0; n < 256; n++){ c = n; for(var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8){ var c = 0xFFFFFFFF; for(var i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function u8str(s){ return new TextEncoder().encode(s); }
+  function zipStore(files){
+    var now = new Date(), dt = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF,
+        dd = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
+    var parts = [], central = [], offset = 0;
+    files.forEach(function(f){
+      var name = u8str(f.name), crc = crc32(f.data), size = f.data.length;
+      var lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+      lh.setUint16(10, dt, true); lh.setUint16(12, dd, true); lh.setUint32(14, crc, true); lh.setUint32(18, size, true); lh.setUint32(22, size, true);
+      lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+      parts.push(new Uint8Array(lh.buffer), name, f.data);
+      var ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+      ch.setUint16(12, dt, true); ch.setUint16(14, dd, true); ch.setUint32(16, crc, true); ch.setUint32(20, size, true); ch.setUint32(24, size, true);
+      ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+      central.push(new Uint8Array(ch.buffer), name);
+      offset += 30 + name.length + size;
+    });
+    var cdSize = 0; central.forEach(function(p){ cdSize += p.length; });
+    var end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+    return new Blob(parts.concat(central, [new Uint8Array(end.buffer)]), { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  }
+  function xmlEsc(s){ return String(s == null ? "" : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+  function canvasPng(canvas){ return new Promise(function(res){ canvas.toBlob(function(b){ b.arrayBuffer().then(function(ab){ res(new Uint8Array(ab)); }); }, "image/png"); }); }
+
+  function exportXlsx(){
+    if(!records.length){ alert("មិនទាន់មានលេខក្នុងបញ្ជីទេ។"); return; }
+    var btn = document.getElementById("xlsxBtn"), old = btn.textContent; btn.textContent = "កំពុងបង្កើត…"; btn.disabled = true;
+    var list = records.slice();
+    Promise.all(list.map(function(r){
+      var c = document.createElement("canvas"); drawQR(c, r.phone, 6, 2); return canvasPng(c);
+    })).then(function(pngs){
+      var NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+      var HDR = ["ល.រ", "QR Code", "លេខទូរស័ព្ទ", "ឈ្មោះ / ចំណាំ", "ថ្ងៃបង្កើត"];
+      var rows = '<row r="1" ht="24" customHeight="1">' + HDR.map(function(h, i){
+        return '<c r="' + "ABCDE".charAt(i) + '1" s="1" t="inlineStr"><is><t>' + xmlEsc(h) + '</t></is></c>'; }).join("") + '</row>';
+      list.forEach(function(r, i){
+        var n = i + 2, d = new Date(r.createdAt || Date.now());
+        rows += '<row r="' + n + '" ht="78" customHeight="1">' +
+          '<c r="A' + n + '" s="3"><v>' + (i + 1) + '</v></c>' +
+          '<c r="B' + n + '" s="3"/>' +
+          '<c r="C' + n + '" s="2" t="inlineStr"><is><t xml:space="preserve">' + xmlEsc(r.phone) + '</t></is></c>' +
+          '<c r="D' + n + '" s="2" t="inlineStr"><is><t xml:space="preserve">' + xmlEsc(r.note || "") + '</t></is></c>' +
+          '<c r="E' + n + '" s="2" t="inlineStr"><is><t>' + xmlEsc(d.toLocaleDateString("en-GB")) + '</t></is></c></row>';
+      });
+      var sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet ' + NS + '><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>' +
+        '<cols><col min="1" max="1" width="6" customWidth="1"/><col min="2" max="2" width="15" customWidth="1"/><col min="3" max="3" width="22" customWidth="1"/><col min="4" max="4" width="32" customWidth="1"/><col min="5" max="5" width="14" customWidth="1"/></cols>' +
+        '<sheetData>' + rows + '</sheetData><drawing r:id="rId1"/></worksheet>';
+      var EMU = 9525 * 96, anchors = "", drels = "";
+      list.forEach(function(r, i){
+        anchors += '<xdr:oneCellAnchor><xdr:from><xdr:col>1</xdr:col><xdr:colOff>57150</xdr:colOff><xdr:row>' + (i + 1) + '</xdr:row><xdr:rowOff>57150</xdr:rowOff></xdr:from><xdr:ext cx="' + EMU + '" cy="' + EMU + '"/>' +
+          '<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="' + (i + 2) + '" name="QR ' + (i + 1) + '"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr>' +
+          '<xdr:blipFill><a:blip r:embed="rId' + (i + 1) + '"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>' +
+          '<xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + EMU + '" cy="' + EMU + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>';
+        drels += '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image' + (i + 1) + '.png"/>';
+      });
+      var REL = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+      var RELNS = 'xmlns="http://schemas.openxmlformats.org/package/2006/relationships"';
+      var HEAD = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+      var files = [
+        { name: "[Content_Types].xml", data: u8str(HEAD + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>') },
+        { name: "_rels/.rels", data: u8str(HEAD + '<Relationships ' + RELNS + '><Relationship Id="rId1" Type="' + REL + '/officeDocument" Target="xl/workbook.xml"/></Relationships>') },
+        { name: "xl/workbook.xml", data: u8str(HEAD + '<workbook ' + NS + '><sheets><sheet name="QR Codes" sheetId="1" r:id="rId1"/></sheets></workbook>') },
+        { name: "xl/_rels/workbook.xml.rels", data: u8str(HEAD + '<Relationships ' + RELNS + '><Relationship Id="rId1" Type="' + REL + '/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="' + REL + '/styles" Target="styles.xml"/></Relationships>') },
+        { name: "xl/styles.xml", data: u8str(HEAD + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="12"/><name val="Calibri"/></font><font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0F766E"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFBBBBBB"/></left><right style="thin"><color rgb="FFBBBBBB"/></right><top style="thin"><color rgb="FFBBBBBB"/></top><bottom style="thin"><color rgb="FFBBBBBB"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="49" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>') },
+        { name: "xl/worksheets/sheet1.xml", data: u8str(sheet) },
+        { name: "xl/worksheets/_rels/sheet1.xml.rels", data: u8str(HEAD + '<Relationships ' + RELNS + '><Relationship Id="rId1" Type="' + REL + '/drawing" Target="../drawings/drawing1.xml"/></Relationships>') },
+        { name: "xl/drawings/drawing1.xml", data: u8str(HEAD + '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="' + REL + '">' + anchors + '</xdr:wsDr>') },
+        { name: "xl/drawings/_rels/drawing1.xml.rels", data: u8str(HEAD + '<Relationships ' + RELNS + '>' + drels + '</Relationships>') }
+      ];
+      pngs.forEach(function(p, i){ files.push({ name: "xl/media/image" + (i + 1) + ".png", data: p }); });
+      var blob = zipStore(files), url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = "vet-qr-list-" + new Date().toISOString().slice(0, 10) + ".xlsx";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    }).catch(function(err){ alert("បង្កើត Excel មិនបានទេ៖ " + (err && err.message ? err.message : err)); })
+      .then(function(){ btn.textContent = old; btn.disabled = false; });
+  }
+  document.getElementById("xlsxBtn").addEventListener("click", exportXlsx);
+
   // ---------- backup ----------
-  var APP_VERSION = "M1-v31";
+  var APP_VERSION = "M1-v33";
   function allStorage(){
     var o = {};
     try{
