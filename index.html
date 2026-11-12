@@ -957,6 +957,9 @@
     saveRecent(recent);
     renderRecent();
     ["scanInput","laserInput"].forEach(function(id){ var el = document.getElementById(id); if(el) el.value = ""; });
+    scanResult.classList.remove("show","found","notfound");
+    scanStatus.textContent = ""; scanNum.textContent = ""; scanNote.textContent = "";
+    try{ if(window.__laserReset) window.__laserReset(); }catch(e){}
   });
 
   document.getElementById("scanCopyBtn").addEventListener("click", function(){
@@ -1455,7 +1458,7 @@
   document.getElementById("xlsxBtn").addEventListener("click", exportXlsx);
 
   // ---------- backup ----------
-  var APP_VERSION = "M1-v55";
+  var APP_VERSION = "M1-v56";
   function allStorage(){
     var o = {};
     try{
@@ -1916,6 +1919,11 @@
   document.getElementById("laserCancel").addEventListener("click", function(){
     laserStopTimer(); laserShow(laserPhone, "✕ បានបោះបង់", "warn", false); laserLastAt = 0; laserFocus();
   });
+  window.__laserReset = function(){
+    laserStopTimer(); laserNow.style.display = "none"; laserNum.textContent = ""; laserSt.textContent = ""; laserActs.style.display = "none";
+    laserPhone = null; laserLastPhone = ""; laserLastAt = 0; laserLog = []; laserSaveLog(); laserRenderLog();
+    laserInput.value = ""; laserFocus();
+  };
   document.getElementById("laserGear").addEventListener("click", function(){
     var p = document.getElementById("laserPanel"), open = p.style.display === "none";
     p.style.display = open ? "block" : "none"; this.classList.toggle("on", open);
